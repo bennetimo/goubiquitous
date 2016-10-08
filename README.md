@@ -22,6 +22,12 @@ Getting Started
 This sample uses the Gradle build system.  To build this project, use the
 "gradlew build" command or use "Import Project" in Android Studio.
 
+The OpenWeatherAPI key should be added to your gradle.properties file as:
+
+    API_KEY_OPEN_WEATHER_MAP=<your_api_key>
+
+This can be placed in the projects `gradle.properties`, or in your global `~/.gradle/gradle.properties`
+
 Support
 -------
 

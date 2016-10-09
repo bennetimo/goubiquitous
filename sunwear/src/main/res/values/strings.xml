@@ -2,4 +2,7 @@
     <string name="app_name">SunWear</string>
     <string name="message">Watch face tapped</string>
     <string name="my_analog_name">Sunshine</string>
+
+    <!-- Strings related to wear -->
+    <string name="message_path">/weather_update</string>
 </resources>

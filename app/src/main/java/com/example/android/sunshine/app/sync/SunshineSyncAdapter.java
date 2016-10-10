@@ -355,7 +355,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
                 JSONObject dayForecast = weatherArray.getJSONObject(i);
 
                 // Cheating to convert this to UTC time, which is what we want anyhow
-                dateTime = dayTime.setJulianDay(julianStartDay+i);
+                dateTime = dayTime.setJulianDay(julianStartDay + i);
 
                 pressure = dayForecast.getDouble(OWM_PRESSURE);
                 humidity = dayForecast.getInt(OWM_HUMIDITY);
@@ -388,7 +388,10 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SHORT_DESC, description);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID, weatherId);
 
-                updateWearables(high, low, weatherId);
+                if (i == 0){
+                    //If it's today's weather
+                    updateWearables(high, low, weatherId);
+                }
 
                 cVVector.add(weatherValues);
             }

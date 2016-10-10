@@ -35,7 +35,6 @@ import android.support.annotation.Nullable;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
-import android.util.Log;
 import android.view.SurfaceHolder;
 
 
@@ -54,7 +53,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Analog watch face with a ticking second hand. In ambient mode, the second hand isn't
- * shown. On devices with low-bit ambient mode, the hands are drawn without anti-aliasing in ambient
+ * shown. On devices with mLow-bit ambient mode, the hands are drawn without anti-aliasing in ambient
  * mode. The watch face is drawn with less contrast in mute mode.
  */
 public class SunshineFace extends CanvasWatchFaceService {
@@ -143,9 +142,10 @@ public class SunshineFace extends CanvasWatchFaceService {
         private boolean mLowBitAmbient;
         private boolean mBurnInProtection;
 
-        private double high;
-        private double low;
-        private Bitmap bitmap;
+        private double mHigh;
+        private double mLow;
+        private Bitmap mBitmap;
+        private boolean mHasWeatherData = false;
 
         GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(SunshineFace.this)
                 .addConnectionCallbacks(this)
@@ -341,18 +341,21 @@ public class SunshineFace extends CanvasWatchFaceService {
                 canvas.drawRect(0, 0, bounds.width(), bounds.height(), mBackgroundPaint);
             }
 
-            if(bitmap != null){
-                int cx = (bounds.width() - bitmap.getWidth()) >> 1; // same as (...) / 2
-                int cy = (bounds.height() - bitmap.getHeight()) >> 1;
-                //Draw the image in the center of the screen
-                canvas.drawBitmap(bitmap, cx, cy, null);
+            // Draw weather data if we have it
+            if(mHasWeatherData){
+                if(mBitmap != null){
+                    int cx = (bounds.width() - mBitmap.getWidth()) >> 1; // same as (...) / 2
+                    int cy = (bounds.height() - mBitmap.getHeight()) >> 1;
+                    //Draw the image in the center of the screen
+                    canvas.drawBitmap(mBitmap, cx, cy, null);
+                }
+
+                String lowText = "" + mLow + (char) 0x00B0;
+                String highText = "" + mHigh + (char) 0x00B0;
+
+                canvas.drawText(highText, centerText(mHighPaint, canvas, highText), mCenterY + 85, mHighPaint);
+                canvas.drawText(lowText, centerText(mLowPaint, canvas, lowText), mCenterY + 120, mLowPaint);
             }
-
-            String lowText = "" + low + (char) 0x00B0;
-            String highText = "" + high + (char) 0x00B0;
-
-            canvas.drawText(highText, centerText(mHighPaint, canvas, highText), mCenterY + 85, mHighPaint);
-            canvas.drawText(lowText, centerText(mLowPaint, canvas, lowText), mCenterY + 120, mLowPaint);
 
             /*
              * Draw ticks. Usually you will want to bake this directly into the photo, but in
@@ -531,12 +534,13 @@ public class SunshineFace extends CanvasWatchFaceService {
                 byte[] rawData = messageEvent.getData();
                 DataMap data = DataMap.fromByteArray(rawData);
 
-                high = data.getDouble("high");
-                low = data.getDouble("low");
+                mHigh = data.getDouble("high");
+                mLow = data.getDouble("low");
                 int weatherCondition = data.getInt("img");
 
                 Drawable backgroundDrawable = getApplicationContext().getDrawable(getArtResourceForWeatherCondition(weatherCondition));
-                bitmap = ((BitmapDrawable) backgroundDrawable).getBitmap();
+                mBitmap = ((BitmapDrawable) backgroundDrawable).getBitmap();
+                mHasWeatherData = true;
             }
         }
 

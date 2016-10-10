@@ -28,6 +28,17 @@ The OpenWeatherAPI key should be added to your gradle.properties file as:
 
 This can be placed in the projects `gradle.properties`, or in your global `~/.gradle/gradle.properties`
 
+Watch Face
+___________
+
+If you have a connected Android wear device, you can install the Sunshine watch face.
+
+Square Face
+[![Square Face](../master/sunwear/src/res/drawable-nodpi/preview_analog_square.png)]
+
+Round Face
+[![Round Face](../master/sunwear/src/res/drawable-nodpi/preview_analog.png)]
+
 Support
 -------
 

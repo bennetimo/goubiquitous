@@ -143,7 +143,9 @@ public class SunshineFace extends CanvasWatchFaceService {
         private boolean mBurnInProtection;
 
         private double mHigh;
+        private String mHighText;
         private double mLow;
+        private String mLowText;
         private Bitmap mBitmap;
         private boolean mHasWeatherData = false;
 
@@ -320,7 +322,7 @@ public class SunshineFace extends CanvasWatchFaceService {
             sHourHandLength = (float) (mCenterX * 0.5);
         }
 
-        public float centerText(Paint paint, Canvas canvas, String text){
+        private float centerText(Paint paint, Canvas canvas, String text){
             Rect r = new Rect();
             canvas.getClipBounds(r);
             int cWidth = r.width();
@@ -328,6 +330,10 @@ public class SunshineFace extends CanvasWatchFaceService {
             paint.getTextBounds(text, 0, text.length(), r);
             float x = cWidth / 2f - r.width() / 2f - r.left;
             return x;
+        }
+
+        private String tempText(double temp){
+            return "" + String.format("%1.0f", temp) + (char) 0x00B0;
         }
 
         @Override
@@ -350,11 +356,8 @@ public class SunshineFace extends CanvasWatchFaceService {
                     canvas.drawBitmap(mBitmap, cx, cy, null);
                 }
 
-                String lowText = "" + mLow + (char) 0x00B0;
-                String highText = "" + mHigh + (char) 0x00B0;
-
-                canvas.drawText(highText, centerText(mHighPaint, canvas, highText), mCenterY + 85, mHighPaint);
-                canvas.drawText(lowText, centerText(mLowPaint, canvas, lowText), mCenterY + 120, mLowPaint);
+                canvas.drawText(mHighText, centerText(mHighPaint, canvas, mHighText), mCenterY + 85, mHighPaint);
+                canvas.drawText(mLowText, centerText(mLowPaint, canvas, mLowText), mCenterY + 120, mLowPaint);
             }
 
             /*
@@ -535,7 +538,10 @@ public class SunshineFace extends CanvasWatchFaceService {
                 DataMap data = DataMap.fromByteArray(rawData);
 
                 mHigh = data.getDouble("high");
+                mHighText = tempText(mHigh);
+
                 mLow = data.getDouble("low");
+                mLowText = tempText(mLow);
                 int weatherCondition = data.getInt("img");
 
                 Drawable backgroundDrawable = getApplicationContext().getDrawable(getArtResourceForWeatherCondition(weatherCondition));
@@ -579,4 +585,5 @@ public class SunshineFace extends CanvasWatchFaceService {
             return -1;
         }
     }
+
 }

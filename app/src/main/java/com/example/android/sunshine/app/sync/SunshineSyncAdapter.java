@@ -61,6 +61,8 @@ import java.net.URL;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 
+import static com.example.android.sunshine.app.Utility.getArtResourceForWeatherCondition;
+
 public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
     public final String LOG_TAG = SunshineSyncAdapter.class.getSimpleName();
@@ -386,7 +388,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SHORT_DESC, description);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID, weatherId);
 
-                updateWearables(high, low);
+                updateWearables(high, low, weatherId);
 
                 cVVector.add(weatherValues);
             }
@@ -417,11 +419,12 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
         }
     }
 
-    private void updateWearables(double high, double low) {
+    private void updateWearables(double high, double low, int weatherCondition) {
 
         DataMap config = new DataMap();
         config.putDouble("high", high);
         config.putDouble("low", low);
+        config.putInt("img", weatherCondition);
         final byte[] rawData = config.toByteArray();
 
         if(mGoogleApiClient.isConnected()) {
@@ -493,7 +496,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter implements 
 
                     int iconId = Utility.getIconResourceForWeatherCondition(weatherId);
                     Resources resources = context.getResources();
-                    int artResourceId = Utility.getArtResourceForWeatherCondition(weatherId);
+                    int artResourceId = getArtResourceForWeatherCondition(weatherId);
                     String artUrl = Utility.getArtUrlForWeatherCondition(context, weatherId);
 
                     // On Honeycomb and higher devices, we can retrieve the size of the large icon

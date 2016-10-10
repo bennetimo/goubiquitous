@@ -20,10 +20,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -99,6 +102,8 @@ public class SunshineFace extends CanvasWatchFaceService {
         private static final float HOUR_STROKE_WIDTH = 5f;
         private static final float MINUTE_STROKE_WIDTH = 3f;
         private static final float SECOND_TICK_STROKE_WIDTH = 2f;
+        private static final float HIGH_TEXT_SIZE = 38f;
+        private static final float LOW_TEXT_SIZE = 38f;
 
         private static final float CENTER_GAP_AND_CIRCLE_RADIUS = 4f;
 
@@ -125,9 +130,13 @@ public class SunshineFace extends CanvasWatchFaceService {
         private int mWatchHandColor;
         private int mWatchHandHighlightColor;
         private int mWatchHandShadowColor;
+        private int mHighColor;
+        private int mLowColor;
         private Paint mHourPaint;
         private Paint mMinutePaint;
         private Paint mSecondPaint;
+        private Paint mHighPaint;
+        private Paint mLowPaint;
         private Paint mTickAndCirclePaint;
         private Paint mBackgroundPaint;
         private boolean mAmbient;
@@ -136,6 +145,7 @@ public class SunshineFace extends CanvasWatchFaceService {
 
         private double high;
         private double low;
+        private Bitmap bitmap;
 
         GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(SunshineFace.this)
                 .addConnectionCallbacks(this)
@@ -162,6 +172,8 @@ public class SunshineFace extends CanvasWatchFaceService {
             mWatchHandColor = Color.WHITE;
             mWatchHandHighlightColor = getResources().getColor(R.color.orange);
             mWatchHandShadowColor = Color.BLACK;
+            mHighColor = Color.WHITE;
+            mLowColor = Color.WHITE;
 
             mHourPaint = new Paint();
             mHourPaint.setColor(mWatchHandColor);
@@ -183,6 +195,18 @@ public class SunshineFace extends CanvasWatchFaceService {
             mSecondPaint.setAntiAlias(true);
             mSecondPaint.setStrokeCap(Paint.Cap.ROUND);
             mSecondPaint.setShadowLayer(SHADOW_RADIUS, 0, 0, mWatchHandShadowColor);
+
+            mHighPaint = new Paint();
+            mHighPaint.setColor(mHighColor);
+            mHighPaint.setTextSize(HIGH_TEXT_SIZE);
+            mHighPaint.setAntiAlias(true);
+            mHighPaint.setStrokeCap(Paint.Cap.ROUND);
+
+            mLowPaint = new Paint();
+            mLowPaint.setColor(mLowColor);
+            mLowPaint.setTextSize(LOW_TEXT_SIZE);
+            mLowPaint.setAntiAlias(true);
+            mLowPaint.setStrokeCap(Paint.Cap.ROUND);
 
             mTickAndCirclePaint = new Paint();
             mTickAndCirclePaint.setColor(mWatchHandColor);
@@ -305,8 +329,11 @@ public class SunshineFace extends CanvasWatchFaceService {
                 canvas.drawRect(0, 0, bounds.width(), bounds.height(), mBackgroundPaint);
             }
 
-            canvas.drawText("" + high, mCenterX, mCenterY + 30, mSecondPaint);
-            canvas.drawText("" + low, mCenterX, mCenterY + 60, mSecondPaint);
+            if(bitmap != null){
+                canvas.drawBitmap(bitmap, mCenterX - 80, mCenterY - 80, null);
+            }
+            canvas.drawText("" + high + (char) 0x00B0, mCenterX - 25, mCenterY - 70, mHighPaint);
+            canvas.drawText("" + low + (char) 0x00B0, mCenterX - 25, mCenterY + 75, mLowPaint);
 
             /*
              * Draw ticks. Usually you will want to bake this directly into the photo, but in
@@ -487,7 +514,46 @@ public class SunshineFace extends CanvasWatchFaceService {
 
                 high = data.getDouble("high");
                 low = data.getDouble("low");
+                int weatherCondition = data.getInt("img");
+
+                Drawable backgroundDrawable = getApplicationContext().getDrawable(getArtResourceForWeatherCondition(weatherCondition));
+                bitmap = ((BitmapDrawable) backgroundDrawable).getBitmap();
             }
+        }
+
+        /**
+         * Helper method to provide the art resource id according to the weather condition id returned
+         * by the OpenWeatherMap call.
+         * @param weatherId from OpenWeatherMap API response
+         * @return resource id for the corresponding icon. -1 if no relation is found.
+         */
+        public int getArtResourceForWeatherCondition(int weatherId) {
+            // Based on weather code data found at:
+            // http://bugs.openweathermap.org/projects/api/wiki/Weather_Condition_Codes
+            if (weatherId >= 200 && weatherId <= 232) {
+                return R.drawable.art_storm;
+            } else if (weatherId >= 300 && weatherId <= 321) {
+                return R.drawable.art_light_rain;
+            } else if (weatherId >= 500 && weatherId <= 504) {
+                return R.drawable.art_rain;
+            } else if (weatherId == 511) {
+                return R.drawable.art_snow;
+            } else if (weatherId >= 520 && weatherId <= 531) {
+                return R.drawable.art_rain;
+            } else if (weatherId >= 600 && weatherId <= 622) {
+                return R.drawable.art_snow;
+            } else if (weatherId >= 701 && weatherId <= 761) {
+                return R.drawable.art_fog;
+            } else if (weatherId == 761 || weatherId == 781) {
+                return R.drawable.art_storm;
+            } else if (weatherId == 800) {
+                return R.drawable.art_clear;
+            } else if (weatherId == 801) {
+                return R.drawable.art_light_clouds;
+            } else if (weatherId >= 802 && weatherId <= 804) {
+                return R.drawable.art_clouds;
+            }
+            return -1;
         }
     }
 }

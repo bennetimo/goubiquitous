@@ -102,8 +102,8 @@ public class SunshineFace extends CanvasWatchFaceService {
         private static final float HOUR_STROKE_WIDTH = 5f;
         private static final float MINUTE_STROKE_WIDTH = 3f;
         private static final float SECOND_TICK_STROKE_WIDTH = 2f;
-        private static final float HIGH_TEXT_SIZE = 38f;
-        private static final float LOW_TEXT_SIZE = 38f;
+        private static final float HIGH_TEXT_SIZE = 32f;
+        private static final float LOW_TEXT_SIZE = 30f;
 
         private static final float CENTER_GAP_AND_CIRCLE_RADIUS = 4f;
 
@@ -173,7 +173,7 @@ public class SunshineFace extends CanvasWatchFaceService {
             mWatchHandHighlightColor = getResources().getColor(R.color.orange);
             mWatchHandShadowColor = Color.BLACK;
             mHighColor = Color.WHITE;
-            mLowColor = Color.WHITE;
+            mLowColor = getResources().getColor(R.color.light_grey);
 
             mHourPaint = new Paint();
             mHourPaint.setColor(mWatchHandColor);
@@ -201,12 +201,14 @@ public class SunshineFace extends CanvasWatchFaceService {
             mHighPaint.setTextSize(HIGH_TEXT_SIZE);
             mHighPaint.setAntiAlias(true);
             mHighPaint.setStrokeCap(Paint.Cap.ROUND);
+            mHighPaint.setTextAlign(Paint.Align.LEFT);
 
             mLowPaint = new Paint();
             mLowPaint.setColor(mLowColor);
             mLowPaint.setTextSize(LOW_TEXT_SIZE);
             mLowPaint.setAntiAlias(true);
             mLowPaint.setStrokeCap(Paint.Cap.ROUND);
+            mLowPaint.setTextAlign(Paint.Align.LEFT);
 
             mTickAndCirclePaint = new Paint();
             mTickAndCirclePaint.setColor(mWatchHandColor);
@@ -318,6 +320,16 @@ public class SunshineFace extends CanvasWatchFaceService {
             sHourHandLength = (float) (mCenterX * 0.5);
         }
 
+        public float centerText(Paint paint, Canvas canvas, String text){
+            Rect r = new Rect();
+            canvas.getClipBounds(r);
+            int cWidth = r.width();
+            paint.setTextAlign(Paint.Align.LEFT);
+            paint.getTextBounds(text, 0, text.length(), r);
+            float x = cWidth / 2f - r.width() / 2f - r.left;
+            return x;
+        }
+
         @Override
         public void onDraw(Canvas canvas, Rect bounds) {
             long now = System.currentTimeMillis();
@@ -330,10 +342,17 @@ public class SunshineFace extends CanvasWatchFaceService {
             }
 
             if(bitmap != null){
-                canvas.drawBitmap(bitmap, mCenterX - 80, mCenterY - 80, null);
+                int cx = (bounds.width() - bitmap.getWidth()) >> 1; // same as (...) / 2
+                int cy = (bounds.height() - bitmap.getHeight()) >> 1;
+                //Draw the image in the center of the screen
+                canvas.drawBitmap(bitmap, cx, cy, null);
             }
-            canvas.drawText("" + high + (char) 0x00B0, mCenterX - 25, mCenterY - 70, mHighPaint);
-            canvas.drawText("" + low + (char) 0x00B0, mCenterX - 25, mCenterY + 75, mLowPaint);
+
+            String lowText = "" + low + (char) 0x00B0;
+            String highText = "" + high + (char) 0x00B0;
+
+            canvas.drawText(highText, centerText(mHighPaint, canvas, highText), mCenterY + 85, mHighPaint);
+            canvas.drawText(lowText, centerText(mLowPaint, canvas, lowText), mCenterY + 120, mLowPaint);
 
             /*
              * Draw ticks. Usually you will want to bake this directly into the photo, but in

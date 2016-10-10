@@ -34,10 +34,10 @@ ___________
 If you have a connected Android wear device, you can install the Sunshine watch face.
 
 Square Face
-[![Square Face](../master/sunwear/src/res/drawable-nodpi/preview_analog_square.png)]
+[![Square Face](../master/sunwear/src/main/res/drawable-nodpi/preview_analog_square.png)]
 
 Round Face
-[![Round Face](../master/sunwear/src/res/drawable-nodpi/preview_analog.png)]
+[![Round Face](../master/sunwear/src/main/res/drawable-nodpi/preview_analog.png)]
 
 Support
 -------
